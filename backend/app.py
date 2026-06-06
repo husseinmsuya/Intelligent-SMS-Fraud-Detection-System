@@ -2,15 +2,25 @@ from flask import Flask, render_template, request
 import pickle
 import nltk
 import re
+import os
 from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
 
-app = Flask(__name__)
+# Download NLTK data on startup (needed on Render)
+nltk.download("punkt", quiet=True)
+nltk.download("punkt_tab", quiet=True)
+nltk.download("stopwords", quiet=True)
 
-with open("spam_model.pkl", "rb") as f:
+# Paths relative to backend/app.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_DIR = os.path.join(BASE_DIR, "..", "frontend", "templates")
+STATIC_DIR = os.path.join(BASE_DIR, "..", "frontend", "static")
+
+app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+
+with open(os.path.join(BASE_DIR, "spam", "spam_model.pkl"), "rb") as f:
     model = pickle.load(f)
-
-with open("tfidf_vectorizer.pkl", "rb") as f:
+with open(os.path.join(BASE_DIR, "tfidf", "tfidf_vectorizer.pkl"), "rb") as f:
     tfidf = pickle.load(f)
 
 stemmer = PorterStemmer()
@@ -34,22 +44,18 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
     message = request.form.get("message", "").strip()
-
     if not message:
         return render_template(
             "index.html",
             error="Please enter a message before running analysis.",
         )
-
     cleaned = clean_text(message)
     vectorized = tfidf.transform([cleaned])
     result = model.predict(vectorized)[0]
     proba = model.predict_proba(vectorized)
     confidence = round(max(proba[0]) * 100, 2)
-
     label = "Spam" if str(result).lower() == "spam" or result == 1 else "Safe"
     risk_level = "High risk" if label == "Spam" else "Low risk"
-
     return render_template(
         "index.html",
         result=result,
@@ -61,4 +67,5 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
