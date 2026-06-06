@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpamShield | Message Risk Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <main class="shell">
+        <nav class="topbar">
+            <a class="brand" href="/">
+                <span class="brand-mark">S</span>
+                <span>
+                    <strong>SpamShield</strong>
+                    <small>Detection Console</small>
+                </span>
+            </a>
+
+            <div class="nav-status">
+                <span class="status-dot"></span>
+                <span>Model online</span>
+            </div>
+        </nav>
+
+      <section class="hero">
+    <div class="hero-content">
+        
+
+        <h1>Analyze message risk before it reaches your inbox.</h1>
+
+        <p class="hero-text">
+            A clean spam detection dashboard for checking emails, SMS, and short text messages with instant confidence scoring.
+        </p>
+
+        <div class="metrics">
+            <div class="metric-card">
+                <span>Mode</span>
+                <strong>Real-time</strong>
+            </div>
+
+            <div class="metric-card">
+                <span>Input</span>
+                <strong>Text only</strong>
+            </div>
+
+            <div class="metric-card">
+                <span>Storage</span>
+                <strong>None</strong>
+            </div>
+        </div>
+    </div>
+</section>
+        <section class="workspace">
+            <div class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">Message scanner</p>
+                        <h2>Run Analysis</h2>
+                    </div>
+                    <span class="pill">TF-IDF Model</span>
+                </div>
+
+                <form action="/predict" method="POST" class="analysis-form">
+                    <label for="message">Message content</label>
+
+                    <textarea
+                        id="message"
+                        name="message"
+                        rows="9"
+                        maxlength="1000"
+                        placeholder="Paste a suspicious message here..."
+                        required>{{ message or "" }}</textarea>
+
+                    {% if error %}
+                    <p class="form-error">{{ error }}</p>
+                    {% endif %}
+
+                    <div class="form-footer">
+                        <button type="submit" class="primary-button">
+                            Analyze Message
+                            <span>→</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="ghost-button"
+                            onclick="document.getElementById('message').value=''">
+                            Clear
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <aside class="panel result-panel {% if label == 'Spam' %}danger{% elif label == 'Safe' %}safe{% endif %}">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">Detection result</p>
+                        <h2>Risk Summary</h2>
+                    </div>
+                </div>
+
+                {% if result is defined %}
+                <div class="result-state">
+                    <span class="result-icon">
+                        {% if label == 'Spam' %}!{% else %}✓{% endif %}
+                    </span>
+
+                    <div>
+                        <p class="result-label">{{ label }} Message</p>
+                        <p class="result-copy">{{ risk_level }} based on the trained classifier.</p>
+                    </div>
+                </div>
+
+                <div class="confidence">
+                    <div class="confidence-top">
+                        <span>Confidence</span>
+                        <strong>{{ confidence }}%</strong>
+                    </div>
+
+                    <div class="confidence-track">
+                        <span style="width: {{ confidence }}%"></span>
+                    </div>
+                </div>
+
+                <div class="message-preview">
+                    <span>Analyzed message</span>
+                    <p>{{ message }}</p>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="empty-icon">↗</span>
+                    <h3>Awaiting analysis</h3>
+                    <p>Submit a message to view classification, confidence, and risk level.</p>
+                </div>
+                {% endif %}
+            </aside>
+        </section>
+    </main>
+</body>
+</html>
