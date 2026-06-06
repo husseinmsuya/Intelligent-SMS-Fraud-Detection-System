@@ -18,9 +18,9 @@ STATIC_DIR = os.path.join(BASE_DIR, "..", "frontend", "static")
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
-with open(os.path.join(BASE_DIR, "spam", "spam_model.pkl"), "rb") as f:
+with open(os.path.join(BASE_DIR, "spam_model.pkl"), "rb") as f:
     model = pickle.load(f)
-with open(os.path.join(BASE_DIR, "tfidf", "tfidf_vectorizer.pkl"), "rb") as f:
+with open(os.path.join(BASE_DIR, "tfidf_vectoreize.pkl"), "rb") as f:
     tfidf = pickle.load(f)
 
 stemmer = PorterStemmer()
